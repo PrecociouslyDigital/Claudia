@@ -28,4 +28,9 @@
 		display: flex;
 		flex-direction: column;
 	}
+	/* Chat scrollable area expands; Input stays anchored at the bottom */
+	.conversation :global(.chat) {
+		flex: 1;
+		overflow-y: auto;
+	}
 </style>
