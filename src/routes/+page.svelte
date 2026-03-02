@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Selector from '$lib/Selector/Selector.svelte';
-	import Chat from '$lib/Chat/Chat.svelte';
-	import Input from '$lib/Input/Input.svelte';
+	import Selector from '$lib/selector/Selector.svelte';
+	import Chat from '$lib/chat/Chat.svelte';
+	import Input from '$lib/input/Input.svelte';
 </script>
 
 <div class="app">
