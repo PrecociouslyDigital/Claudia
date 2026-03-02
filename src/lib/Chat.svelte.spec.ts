@@ -1,7 +1,7 @@
 import { page } from 'vitest/browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import Chat from './Chat.svelte';
+import Chat from './Chat/Chat.svelte';
 import { appState } from './state.svelte.js';
 import { md } from './types.js';
 
