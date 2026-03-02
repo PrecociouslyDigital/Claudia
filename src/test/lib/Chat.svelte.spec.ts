@@ -1,14 +1,20 @@
+import * as fc from 'fast-check';
 import { page } from 'vitest/browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import Chat from './chat/Chat.svelte';
-import { appState } from './state.svelte.js';
-import { md } from './types.js';
+import Chat from '$lib/chat/Chat.svelte';
+import { appState } from '$lib/state.svelte.js';
+import { md, type ChatComponentState } from '$lib/types.js';
+import { arbChat, arbChatWithPartnerLastMessage } from '../utils/arb.js';
 
 describe('Chat', () => {
+	let chat: ChatComponentState;
+
 	beforeEach(() => {
+		chat = fc.sample(arbChat(), 1)[0];
 		appState.currentlySelected = 0;
-		// Reset Claudia to clean state so each test has a predictable baseline
+		appState.chats[0] = chat;
+		// Zero out messages so header tests have a clean baseline
 		appState.chats[0].messages = [];
 	});
 
@@ -16,7 +22,7 @@ describe('Chat', () => {
 		it('shows the partner name as an h2', async () => {
 			render(Chat);
 			await expect
-				.element(page.getByRole('heading', { name: 'Claudia', level: 2 }))
+				.element(page.getByRole('heading', { name: chat.name, level: 2 }))
 				.toBeInTheDocument();
 		});
 
@@ -34,14 +40,13 @@ describe('Chat', () => {
 
 		it('status dot reflects the chat status via data-status', async () => {
 			render(Chat);
-			// Claudia is 'active'
-			const dot = document.querySelector('header figure span[data-status="active"]');
+			const dot = document.querySelector(`header figure span[data-status="${chat.status}"]`);
 			expect(dot).not.toBeNull();
 		});
 
 		it('shows the status text', async () => {
 			render(Chat);
-			await expect.element(page.getByText('Always here for you ♡')).toBeInTheDocument();
+			await expect.element(page.getByText(chat.statusText)).toBeInTheDocument();
 		});
 	});
 
@@ -112,20 +117,22 @@ describe('Chat', () => {
 
 	describe('chat switching', () => {
 		it('updating currentlySelected shows the new partner name as h2', async () => {
+			const secondChat = fc.sample(arbChat(1), 1)[0];
+			appState.chats = [chat, secondChat];
 			render(Chat);
-			// Switch to Jordan (index 1)
 			appState.currentlySelected = 1;
 			await expect
-				.element(page.getByRole('heading', { name: 'Jordan', level: 2 }))
+				.element(page.getByRole('heading', { name: secondChat.name, level: 2 }))
 				.toBeInTheDocument();
 		});
 
 		it('switching chats shows messages from the new chat', async () => {
+			const secondChat = fc.sample(arbChatWithPartnerLastMessage(), 1)[0];
+			appState.chats = [chat, secondChat];
 			render(Chat);
 			appState.currentlySelected = 1;
-			// Jordan has a seed message
-			const jordanMsg = appState.chats[1].messages.at(-1)!;
-			await expect.element(page.getByText(jordanMsg.text)).toBeInTheDocument();
+			const lastMsg = secondChat.messages.at(-1)!;
+			await expect.element(page.getByText(lastMsg.text)).toBeInTheDocument();
 		});
 	});
 });

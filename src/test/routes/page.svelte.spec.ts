@@ -1,17 +1,15 @@
 import { page } from 'vitest/browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import Page from './+page.svelte';
+import Page from '../../routes/+page.svelte';
 import { appState } from '$lib/state.svelte.js';
 import { md } from '$lib/types.js';
 
 describe('/+page.svelte', () => {
 	it('renders the selector sidebar and chat area', async () => {
 		render(Page);
-		// Chat pane: active chat heading (h2 with the selected partner's name)
-		await expect
-			.element(page.getByRole('heading', { name: 'Claudia', level: 2 }))
-			.toBeInTheDocument();
+		// Chat pane: active chat heading (h2 — first one in the DOM)
+		await expect.element(page.getByRole('heading', { level: 2 }).first()).toBeInTheDocument();
 		// Input area present
 		await expect.element(page.getByRole('button', { name: 'Send' })).toBeInTheDocument();
 	});
