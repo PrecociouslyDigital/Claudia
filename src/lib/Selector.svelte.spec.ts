@@ -57,4 +57,20 @@ describe('Selector', () => {
 		const emptyPreview = document.querySelector('.chat-preview.empty');
 		expect(emptyPreview).not.toBeNull();
 	});
+
+	describe('layout', () => {
+		it('list has no bullet styling', () => {
+			render(Selector);
+			const ul = document.querySelector('.selector')!;
+			expect(getComputedStyle(ul).listStyleType).toBe('none');
+		});
+
+		it('all chat rows are the same height', () => {
+			render(Selector);
+			const buttons = [...document.querySelectorAll('.chat-row-btn')] as HTMLElement[];
+			const heights = buttons.map((b) => b.offsetHeight);
+			// Every row should render at exactly the same height
+			expect(new Set(heights).size).toBe(1);
+		});
+	});
 });

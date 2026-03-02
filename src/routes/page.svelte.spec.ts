@@ -13,4 +13,16 @@ describe('/+page.svelte', () => {
 		// Input area present
 		await expect.element(page.getByRole('button', { name: 'Send' })).toBeInTheDocument();
 	});
+
+	describe('layout', () => {
+		it('input is flush with the bottom of the conversation pane', () => {
+			render(Page);
+			const conversation = document.querySelector('.conversation')!;
+			const input = document.querySelector('.input')!;
+			const { bottom: convBottom } = conversation.getBoundingClientRect();
+			const { bottom: inputBottom } = input.getBoundingClientRect();
+			// Allow 1px for sub-pixel rounding
+			expect(Math.abs(convBottom - inputBottom)).toBeLessThanOrEqual(1);
+		});
+	});
 });
