@@ -1,2 +1,31 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import Selector from '$lib/Selector.svelte';
+	import Chat from '$lib/Chat.svelte';
+	import Input from '$lib/Input.svelte';
+</script>
+
+<div class="app">
+	<aside class="sidebar">
+		<Selector />
+	</aside>
+	<main class="conversation">
+		<Chat />
+		<Input />
+	</main>
+</div>
+
+<style>
+	.app {
+		display: flex;
+		height: 100vh;
+	}
+	.sidebar {
+		width: 260px;
+		flex-shrink: 0;
+	}
+	.conversation {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+</style>

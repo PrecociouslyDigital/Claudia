@@ -4,7 +4,7 @@
 
 ### Status
 
-Not Started
+In Progress
 
 ### Goals
 
@@ -12,9 +12,16 @@ By the end of this phase, the basic interaction primitives of the chat app shoul
 
 ### Deliverables
 
-[ ] Chat application
-[ ] Ending Cutscene, incl. crash
-[ ] Ability to respond to at least 5 different questions
+[~] Chat application — Application Layer MVP complete (Selector, Chat stub, Input stub, shared state). Game State integration and full chat rendering remain.
+
+- [x] Selector component with status dots, last-message preview, click-to-select
+- [x] Chat stub (shows active chat name)
+- [x] Input stub (sends user messages into state)
+- [x] Shared reactive singleton state (5 seed chats)
+- [ ] Full message rendering (timestamps, avatars)
+- [ ] Game State layer (scene system, Companion responses)
+      [ ] Ending Cutscene, incl. crash
+      [ ] Ability to respond to at least 5 different questions
 
 ### Playtest Objectives
 
