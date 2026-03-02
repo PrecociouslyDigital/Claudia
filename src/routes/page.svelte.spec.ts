@@ -15,14 +15,14 @@ describe('/+page.svelte', () => {
 	});
 
 	describe('layout', () => {
-		it('input is flush with the bottom of the conversation pane', () => {
+		it('input bottom is flush with selector bottom', () => {
 			render(Page);
-			const conversation = document.querySelector('.conversation')!;
+			const selector = document.querySelector('.selector')!;
 			const input = document.querySelector('.input')!;
-			const { bottom: convBottom } = conversation.getBoundingClientRect();
+			const { bottom: selectorBottom } = selector.getBoundingClientRect();
 			const { bottom: inputBottom } = input.getBoundingClientRect();
 			// Allow 1px for sub-pixel rounding
-			expect(Math.abs(convBottom - inputBottom)).toBeLessThanOrEqual(1);
+			expect(Math.abs(selectorBottom - inputBottom)).toBeLessThanOrEqual(1);
 		});
 	});
 });

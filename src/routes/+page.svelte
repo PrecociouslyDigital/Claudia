@@ -17,7 +17,6 @@
 <style>
 	.app {
 		display: flex;
-		height: 100vh;
 	}
 	.sidebar {
 		width: 260px;
