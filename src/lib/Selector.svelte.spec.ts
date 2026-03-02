@@ -18,17 +18,16 @@ describe('Selector', () => {
 		}
 	});
 
-	it('each row has a status-dot element', async () => {
+	it('each row has a status indicator', async () => {
 		render(Selector);
-		// Direct DOM query — `document` is the live browser document in browser mode
-		const dots = document.querySelectorAll('.status-dot');
+		const dots = document.querySelectorAll('[data-status]');
 		expect(dots).toHaveLength(appState.chats.length);
 	});
 
-	it('first chat row has class selected by default', async () => {
+	it('first chat row has aria-current by default', async () => {
 		render(Selector);
-		const firstRow = document.querySelector('.chat-row');
-		expect(firstRow?.classList.contains('selected')).toBe(true);
+		const firstRow = document.querySelector('li');
+		expect(firstRow?.getAttribute('aria-current')).toBe('true');
 	});
 
 	it('clicking a chat sets appState.currentlySelected', async () => {
@@ -38,12 +37,12 @@ describe('Selector', () => {
 		expect(appState.currentlySelected).toBe(2);
 	});
 
-	it('selected class moves to the clicked row', async () => {
+	it('aria-current moves to the clicked row', async () => {
 		render(Selector);
 		await page.getByRole('button').nth(1).click();
-		const rows = document.querySelectorAll('.chat-row');
-		expect(rows[0]?.classList.contains('selected')).toBe(false);
-		expect(rows[1]?.classList.contains('selected')).toBe(true);
+		const rows = document.querySelectorAll('li');
+		expect(rows[0]?.getAttribute('aria-current')).toBeNull();
+		expect(rows[1]?.getAttribute('aria-current')).toBe('true');
 	});
 
 	it('partner last message preview shows text without prefix', async () => {
@@ -59,10 +58,10 @@ describe('Selector', () => {
 		await expect.element(page.getByText('You: Hey!')).toBeInTheDocument();
 	});
 
-	it('.chat-preview.empty appears for chats without messages', async () => {
+	it('empty preview appears for chats without messages', async () => {
 		render(Selector);
 		// Claudia (index 0) starts with no messages
-		const emptyPreview = document.querySelector('.chat-preview.empty');
+		const emptyPreview = document.querySelector('small.empty');
 		expect(emptyPreview).not.toBeNull();
 	});
 
@@ -75,7 +74,7 @@ describe('Selector', () => {
 
 		it('all chat rows are the same height', () => {
 			render(Selector);
-			const buttons = [...document.querySelectorAll('.chat-row-btn')] as HTMLElement[];
+			const buttons = [...document.querySelectorAll('li > button')] as HTMLElement[];
 			const heights = buttons.map((b) => b.offsetHeight);
 			// Every row should render at exactly the same height
 			expect(new Set(heights).size).toBe(1);

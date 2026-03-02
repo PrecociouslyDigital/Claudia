@@ -6,21 +6,19 @@
 <ul class="selector">
 	{#each appState.chats as chat, i (chat.name)}
 		{@const lastMsg = chat.messages.at(-1)}
-		<li class="chat-row" class:selected={appState.currentlySelected === i}>
-			<button class="chat-row-btn" onclick={() => (appState.currentlySelected = i)}>
-				<div class="avatar-wrap">
-					<img src={chat.profilePicture} alt={chat.name} class="avatar" />
-					<span class="status-dot status--{chat.status}"></span>
-				</div>
-				<div class="chat-info">
-					<span class="chat-name">{chat.name}</span>
+		<li aria-current={appState.currentlySelected === i ? 'true' : undefined}>
+			<button onclick={() => (appState.currentlySelected = i)}>
+				<figure>
+					<img src={chat.profilePicture} alt={chat.name} />
+					<span data-status={chat.status}></span>
+				</figure>
+				<div>
+					<strong>{chat.name}</strong>
 					{#if lastMsg}
-						<span class="chat-preview"
-							>{lastMsg.role === 'user' ? `You: ${lastMsg.text}` : lastMsg.text}</span
-						>
-						<span class="chat-time">{formatTime(lastMsg.time)}</span>
+						<small>{lastMsg.role === 'user' ? `You: ${lastMsg.text}` : lastMsg.text}</small>
+						<time datetime={lastMsg.time.toISOString()}>{formatTime(lastMsg.time)}</time>
 					{:else}
-						<span class="chat-preview empty">No messages yet</span>
+						<small class="empty">No messages yet</small>
 					{/if}
 				</div>
 			</button>
@@ -34,7 +32,8 @@
 		margin: 0;
 		padding: 0;
 	}
-	.chat-row-btn {
+
+	button {
 		display: flex;
 		align-items: center;
 		width: 100%;
@@ -44,21 +43,25 @@
 		border: none;
 		cursor: pointer;
 	}
-	.avatar-wrap {
+
+	figure {
 		position: relative;
 		flex-shrink: 0;
 		width: 40px;
 		height: 40px;
+		margin: 0;
 		margin-right: 8px;
 	}
-	.avatar {
+
+	figure img {
 		width: 40px;
 		height: 40px;
 		border-radius: 50%;
 		object-fit: cover;
 		background: #ccc;
 	}
-	.status-dot {
+
+	figure span {
 		position: absolute;
 		bottom: 1px;
 		right: 1px;
@@ -67,45 +70,52 @@
 		border-radius: 50%;
 		border: 2px solid white;
 	}
-	.status--active {
+
+	figure span[data-status='active'] {
 		background: #4caf50;
 	}
-	.status--away {
+	figure span[data-status='away'] {
 		background: #ff9800;
 	}
-	.status--busy {
+	figure span[data-status='busy'] {
 		background: #f44336;
 	}
-	.status--offline {
+	figure span[data-status='offline'] {
 		background: #9e9e9e;
 	}
-	.chat-info {
+
+	div {
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
 	}
-	.chat-name {
+
+	strong {
 		font-weight: bold;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.chat-preview {
+
+	small {
 		font-size: 0.85em;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		color: #555;
 	}
-	.chat-preview.empty {
+
+	small.empty {
 		font-style: italic;
 		color: #999;
 	}
-	.chat-time {
+
+	time {
 		font-size: 0.75em;
 		color: #999;
 	}
-	.chat-row.selected .chat-row-btn {
+
+	li[aria-current] button {
 		background: #e8f0fe;
 	}
 </style>
