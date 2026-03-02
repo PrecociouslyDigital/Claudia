@@ -4,3 +4,14 @@ if [ -n "$STAGED" ]; then
   echo "$STAGED" | xargs npx prettier --write
   echo "$STAGED" | xargs git add
 fi
+
+# Snapshot Claude session files into claude_audit/
+PROJECT_KEY=$(pwd | sed 's|/|-|g')
+SESSIONS_SRC="$HOME/.claude/projects/$PROJECT_KEY"
+if [ -d "$SESSIONS_SRC" ]; then
+  mkdir -p claude_audit
+  cp "$SESSIONS_SRC"/*.jsonl claude_audit/ 2>/dev/null || true
+  # Redact the machine-specific project path from copied files
+  sed -i '' "s|$(pwd)|<PROJECT_ROOT>|g" claude_audit/*.jsonl 2>/dev/null || true
+  git add claude_audit/
+fi
