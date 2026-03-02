@@ -4,8 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import Selector from '$lib/selector/Selector.svelte';
 import { appState } from '$lib/state.svelte.js';
-import { md } from '$lib/types.js';
-import { arbAppState, arbChatWithPartnerLastMessage } from '../utils/arb.js';
+import { arbAppState, arbChat } from '../utils/arb.js';
 
 describe('Selector', () => {
 	beforeEach(() => {
@@ -50,19 +49,14 @@ describe('Selector', () => {
 		expect(rows[1]?.getAttribute('aria-current')).toBe('true');
 	});
 
-	it('partner last message preview shows text without prefix', async () => {
-		const chatWithMsg = fc.sample(arbChatWithPartnerLastMessage(), 1)[0];
+	it('last message preview adds "You:" prefix iff the last message is from the user', async () => {
+		const chatWithMsg = fc.sample(arbChat(1), 1)[0];
 		appState.chats[0] = chatWithMsg;
 		appState.currentlySelected = 0;
 		render(Selector);
 		const lastMsg = chatWithMsg.messages.at(-1)!;
-		await expect.element(page.getByText(lastMsg.text)).toBeInTheDocument();
-	});
-
-	it('user last message preview is prefixed with "You:"', async () => {
-		appState.chats[0].messages = [{ role: 'user', text: md('Hey!'), time: new Date() }];
-		render(Selector);
-		await expect.element(page.getByText('You: Hey!')).toBeInTheDocument();
+		const expected = lastMsg.role === 'user' ? `You: ${lastMsg.text}` : lastMsg.text;
+		await expect.element(page.getByText(expected)).toBeInTheDocument();
 	});
 
 	it('empty preview appears for chats without messages', async () => {

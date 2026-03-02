@@ -61,10 +61,12 @@ export const arbChatWithPartnerLastMessage = (): fc.Arbitrary<ChatComponentState
  * .chain() constrains currentlySelected to always be < chats.length.
  */
 export const arbAppState = (minChats = 2): fc.Arbitrary<ChatAppState> =>
-	fc.array(arbChat(), { minLength: minChats, maxLength: 6 }).chain((chats) =>
-		fc.record({
-			chats: fc.constant(chats),
-			player: arbChatUser(),
-			currentlySelected: fc.integer({ min: 0, max: chats.length - 1 })
-		})
-	);
+	fc
+		.uniqueArray(arbChat(), { minLength: minChats, maxLength: 6, selector: (c) => c.name })
+		.chain((chats) =>
+			fc.record({
+				chats: fc.constant(chats),
+				player: arbChatUser(),
+				currentlySelected: fc.integer({ min: 0, max: chats.length - 1 })
+			})
+		);

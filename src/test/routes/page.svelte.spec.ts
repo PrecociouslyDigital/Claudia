@@ -1,9 +1,12 @@
+import * as fc from 'fast-check';
+import { flushSync } from 'svelte';
 import { page } from 'vitest/browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import Page from '../../routes/+page.svelte';
 import { appState } from '$lib/state.svelte.js';
 import { md } from '$lib/types.js';
+import { arbChat } from '../utils/arb.js';
 
 describe('/+page.svelte', () => {
 	it('renders the selector sidebar and chat area', async () => {
@@ -84,6 +87,86 @@ describe('/+page.svelte', () => {
 				expect(msgList.scrollHeight).toBeGreaterThan(msgList.clientHeight);
 				expect(msgList.scrollHeight - msgList.scrollTop - msgList.clientHeight).toBeLessThan(16);
 			});
+		});
+
+		it('auto-scrolls when a new message arrives and the user is already at the bottom', async () => {
+			for (let i = 0; i < 30; i++) {
+				appState.chats[0].messages.push({
+					role: 'user',
+					text: md(`Message ${i}`),
+					time: new Date()
+				});
+			}
+			render(Page);
+			const msgList = document.querySelector('.chat ul')!;
+
+			// Wait for initial auto-scroll
+			await vi.waitFor(() => {
+				expect(msgList.scrollHeight - msgList.scrollTop - msgList.clientHeight).toBeLessThan(16);
+			});
+
+			// New message arrives while the user is at the bottom
+			flushSync(() => {
+				appState.chats[0].messages = [
+					...appState.chats[0].messages,
+					{ role: 'partner', text: md('new'), time: new Date() }
+				];
+			});
+
+			// View should have followed the new message down
+			expect(msgList.scrollHeight - msgList.scrollTop - msgList.clientHeight).toBeLessThan(16);
+		});
+
+		it('selector stays within app when many chats exist', () => {
+			// uniqueArray ensures no two chats share a name — Selector keys on chat.name
+			appState.chats = fc.sample(
+				fc.uniqueArray(arbChat(), { minLength: 20, maxLength: 20, selector: (c) => c.name }),
+				1
+			)[0];
+			render(Page);
+			const app = document.querySelector('.app')!;
+			const sidebar = document.querySelector('.sidebar')!;
+			// App must not grow — the sidebar scrolls inside
+			expect(app.scrollHeight).toBe(app.clientHeight);
+			// The sidebar itself is the scrollable container
+			expect(sidebar.scrollHeight).toBeGreaterThan(sidebar.clientHeight);
+		});
+
+		it('does not auto-scroll when the user has scrolled away from the bottom', async () => {
+			for (let i = 0; i < 30; i++) {
+				appState.chats[0].messages.push({
+					role: 'user',
+					text: md(`Message ${i}`),
+					time: new Date()
+				});
+			}
+			render(Page);
+			const msgList = document.querySelector('.chat ul')!;
+
+			// Wait for the initial auto-scroll to settle
+			await vi.waitFor(() => {
+				expect(msgList.scrollHeight - msgList.scrollTop - msgList.clientHeight).toBeLessThan(16);
+			});
+
+			// User scrolls to the top — this disengages scroll-lock
+			msgList.scrollTop = 0;
+			msgList.dispatchEvent(new Event('scroll'));
+
+			// flushSync forces Svelte's reactive updates to settle synchronously,
+			// letting us assert DOM state immediately without a waitFor loop.
+			const countBefore = msgList.querySelectorAll('li').length;
+			flushSync(() => {
+				appState.chats[0].messages = [
+					...appState.chats[0].messages,
+					{ role: 'partner', text: md('new'), time: new Date() }
+				];
+			});
+
+			// New message was rendered — confirms the $effect ran
+			expect(msgList.querySelectorAll('li').length).toBe(countBefore + 1);
+
+			// Scroll position should remain near the top — lock must not have fired
+			expect(msgList.scrollTop).toBeLessThan(16);
 		});
 	});
 });

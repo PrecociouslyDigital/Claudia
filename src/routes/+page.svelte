@@ -32,6 +32,7 @@
 		min-width: 160px;
 		max-width: 260px;
 		flex-shrink: 0;
+		overflow-y: auto;
 	}
 	.conversation {
 		flex: 1;

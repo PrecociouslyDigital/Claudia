@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import Chat from '$lib/chat/Chat.svelte';
 import { appState } from '$lib/state.svelte.js';
-import { md, type ChatComponentState } from '$lib/types.js';
-import { arbChat, arbChatWithPartnerLastMessage } from '../utils/arb.js';
+import { type Markdown, type ChatComponentState } from '$lib/types.js';
+import { arbChat, arbChatWithPartnerLastMessage, arbMarkdown } from '../utils/arb.js';
 
 describe('Chat', () => {
 	let chat: ChatComponentState;
@@ -65,19 +65,24 @@ describe('Chat', () => {
 	});
 
 	describe('messages', () => {
+		// Roles are fixed (2 user + 1 partner) so count/avatar tests stay simple;
+		// texts are arbitrary so tests don't couple to any specific string.
+		let texts: Markdown[];
+
 		beforeEach(() => {
+			texts = fc.sample(arbMarkdown(), 3);
 			appState.chats[0].messages = [
-				{ role: 'user', text: md('Hello there!'), time: new Date() },
-				{ role: 'partner', text: md('Hi back!'), time: new Date() },
-				{ role: 'user', text: md('How are you?'), time: new Date() }
+				{ role: 'user', text: texts[0], time: new Date() },
+				{ role: 'partner', text: texts[1], time: new Date() },
+				{ role: 'user', text: texts[2], time: new Date() }
 			];
 		});
 
 		it('renders all message texts', async () => {
 			render(Chat);
-			await expect.element(page.getByText('Hello there!')).toBeInTheDocument();
-			await expect.element(page.getByText('Hi back!')).toBeInTheDocument();
-			await expect.element(page.getByText('How are you?')).toBeInTheDocument();
+			for (const text of texts) {
+				await expect.element(page.getByText(text)).toBeInTheDocument();
+			}
 		});
 
 		it('renders the correct number of partner bubbles', async () => {
