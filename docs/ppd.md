@@ -18,7 +18,7 @@ By the end of this phase, the basic interaction primitives of the chat app shoul
 - [x] Chat stub (shows active chat name)
 - [x] Input stub (sends user messages into state)
 - [x] Shared reactive singleton state (5 seed chats)
-- [ ] Full message rendering (timestamps, avatars)
+- [x] Full message rendering (timestamps, avatars)
 - [ ] Game State layer (scene system, Companion responses)
       [ ] Ending Cutscene, incl. crash
       [ ] Ability to respond to at least 5 different questions
