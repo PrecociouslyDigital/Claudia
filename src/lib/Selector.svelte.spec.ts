@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import Selector from './Selector.svelte';
 import { appState } from './state.svelte.js';
+import { md } from './types.js';
 
 describe('Selector', () => {
 	beforeEach(() => {
 		appState.currentlySelected = 0;
+		appState.chats[0].messages = [];
 	});
 
 	it('renders all chat names', async () => {
@@ -44,11 +46,17 @@ describe('Selector', () => {
 		expect(rows[1]?.classList.contains('selected')).toBe(true);
 	});
 
-	it('last message preview text appears for chats with messages', async () => {
+	it('partner last message preview shows text without prefix', async () => {
 		render(Selector);
-		// Jordan (index 1) has a seed message
+		// Jordan (index 1) has a seed partner message
 		const lastMsg = appState.chats[1].messages.at(-1)!;
 		await expect.element(page.getByText(lastMsg.text)).toBeInTheDocument();
+	});
+
+	it('user last message preview is prefixed with "You:"', async () => {
+		appState.chats[0].messages = [{ role: 'user', text: md('Hey!'), time: new Date() }];
+		render(Selector);
+		await expect.element(page.getByText('You: Hey!')).toBeInTheDocument();
 	});
 
 	it('.chat-preview.empty appears for chats without messages', async () => {

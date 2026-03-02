@@ -15,7 +15,9 @@
 				<div class="chat-info">
 					<span class="chat-name">{chat.name}</span>
 					{#if lastMsg}
-						<span class="chat-preview">{lastMsg.text}</span>
+						<span class="chat-preview"
+							>{lastMsg.role === 'user' ? `You: ${lastMsg.text}` : lastMsg.text}</span
+						>
 						<span class="chat-time">{formatTime(lastMsg.time)}</span>
 					{:else}
 						<span class="chat-preview empty">No messages yet</span>

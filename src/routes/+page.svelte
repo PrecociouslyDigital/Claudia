@@ -17,6 +17,9 @@
 <style>
 	.app {
 		display: flex;
+		height: 100vh;
+		border: 1px solid #ddd;
+		box-sizing: border-box;
 	}
 	.sidebar {
 		width: 260px;
