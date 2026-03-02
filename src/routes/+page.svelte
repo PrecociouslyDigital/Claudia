@@ -17,22 +17,30 @@
 <style>
 	.app {
 		display: flex;
-		height: 100vh;
+		width: 50vw;
+		height: 50vh;
+		/* Center in viewport regardless of body margin */
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
 		border: 1px solid #ddd;
 		box-sizing: border-box;
 	}
 	.sidebar {
-		width: 260px;
+		width: 30%;
+		min-width: 160px;
+		max-width: 260px;
 		flex-shrink: 0;
 	}
 	.conversation {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
+		min-width: 0;
 	}
-	/* Chat scrollable area expands; Input stays anchored at the bottom */
+	/* Chat declares flex:1/min-height:0 itself; this just confirms the intent from outside */
 	.conversation :global(.chat) {
 		flex: 1;
-		overflow-y: auto;
 	}
 </style>

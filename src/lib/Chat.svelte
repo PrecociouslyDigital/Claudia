@@ -63,6 +63,9 @@
 	.chat {
 		display: flex;
 		flex-direction: column;
+		/* flex:1 fills the conversation column; min-height:0 lets the ul shrink and scroll */
+		flex: 1;
+		min-height: 0;
 	}
 
 	header {
@@ -131,6 +134,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+		/* Scrollable container: flex:1 fills remaining chat height; min-height:0
+		   overrides flex's default min-height:auto which would prevent overflow */
+		flex: 1;
+		overflow-y: auto;
+		min-height: 0;
 	}
 
 	li {
