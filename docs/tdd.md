@@ -29,11 +29,11 @@ Each "chat" should be an instance of a component, which is a data-dependent rend
 
 ```typescript
 type ChatComponentState = ChatUser & {
-    messsages: {
-        role: "user" | "partner";
-        text: Markdown;
-        time: UTCTime;
-    }[];
+	messsages: {
+		role: 'user' | 'partner';
+		text: Markdown;
+		time: UTCTime;
+	}[];
 };
 ```
 
@@ -51,41 +51,57 @@ The Game State comprises the logic of the game. It exposes the following interfa
 
 ```typescript
 function recieveMessage(message: { userIndex: number; text: Markdown }): void {
-    // Never respond unless it's the assistant user.
-    if (userIndex !== assistantUser) return;
-    GameState.incomingMessages.push(stripMarkdown(message.text));
-    // Kick off the message processing loop. notably DOES NOT AWAIT; we don't want to block recieving more user messages.
-    GameState.processMessageQueue();
+	// Never respond unless it's the assistant user.
+	if (userIndex !== assistantUser) return;
+	GameState.incomingMessages.push(stripMarkdown(message.text));
+	// Kick off the message processing loop. notably DOES NOT AWAIT; we don't want to block recieving more user messages.
+	GameState.processMessageQueue();
 }
 ```
 
+The game state is structured as a factory for testability — `appendPartnerMessage` is injected rather than imported directly, allowing tests to supply a mock.
+
 ```typescript
-type GameState = { };
+/** Pure game data — no methods. Flows through scenes like redux state. */
+type GameData = {
+	phase: GamePhase;
+	// extended by scenes as needed
+};
 
-//Singleton state instance, mutated
-export default const state : GameState;
+type GameState = {
+	sceneList: Scene[];
+	data: GameData;
+	receiveMessage(msg: { userIndex: number; text: Markdown }): void;
+	processingDone: Promise<void>; // resolves when queue drains; useful in tests
+};
 
-export const incomingMessages: string[];
+// Factory — production code wires in the real appendPartnerMessage
+function createGameState(
+	appendMessage: (userIndex: number, text: Markdown) => void,
+	initialData: GameData = { phase: 'exploration' }
+): GameState;
 
-// Scenes are generally imported from specific scene files.
-type Scene = () => undefined | Promise<Markdown>;
-const sceneList : Scene[] = [];
-var currentlyRunningScene : boolean = true;
+// Singleton used by the application layer
+export const gameState: GameState;
 
-function processMessageQueue(){
-    if(currentlyRunningScene) return;
-    currentlyRunningScene = true;
-    while(R.notEmpty(incomingMessages)){
-        const currentMessage = incomingMessages.shift();
-        for(scene in sceneList){
-            const mbRunner = scene();
-            if(mbRunner != null) {
-                Chat.appendPartnerMessage(assistantUser, await runner);
-                break;
-            }
-        }
-    }
-    currentlyRunningScene = false;
+const incomingMessages: string[];
+let currentlyRunning: boolean = false;
+
+async function processMessageQueue() {
+	if (currentlyRunning) return;
+	currentlyRunning = true;
+	while (incomingMessages.length > 0) {
+		const text = incomingMessages.shift()!;
+		for (const scene of sceneList) {
+			const [newData, mbResponse] = scene(data, text);
+			data = newData; // always update state, even for non-matching scenes
+			if (mbResponse !== undefined) {
+				appendMessage(assistantUser, await mbResponse);
+				break;
+			}
+		}
+	}
+	currentlyRunning = false;
 }
 ```
 
@@ -93,18 +109,26 @@ Additionally, during development, buttons should be available to copy and paste 
 
 ## Scene
 
-Scenes generally live in their own modules, with the following pattern:
+Scenes are pure functions following a redux-style pattern — they receive the current `GameData` and the stripped message text, and return the (possibly updated) `GameData` plus an optional async response. The first scene that returns a non-`undefined` response handles the message; all scenes always have the opportunity to update state.
 
 ```typescript
-// use a builder to prevent accidental state mutations
-export const createSceneState = () => ({
-    "..."
-})
+/** Pure game data flowing through the scene pipeline. */
+export type GameData = {
+	phase: GamePhase;
+};
 
-export const shouldTrigger: Scene = () => checkCondition ? runScene() : null;
+/**
+ * A scene is a pure function:
+ *   - Always returns [newState, response | undefined]
+ *   - If response is defined, this scene is "handling" the message
+ *   - May update GameData even when not handling (e.g. tracking counters)
+ */
+export type Scene = (state: GameData, message: string) => [GameData, Promise<Markdown> | undefined];
 
-async function runScene(){
-    ///do the actual scene stuff
+// Typical scene module pattern:
+export function myScene(state: GameData, message: string): ReturnType<Scene> {
+	if (!shouldHandle(message)) return [state, undefined];
+	return [state, Promise.resolve(md(generateResponse(message)))];
 }
 ```
 

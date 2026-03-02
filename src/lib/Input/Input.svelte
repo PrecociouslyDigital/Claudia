@@ -1,23 +1,24 @@
 <script lang="ts">
 	import { appState } from '../state.svelte.js';
 	import { md } from '../types.js';
+	import gameState from '../gameState.js';
 
 	let text = $state('');
 
 	function send() {
 		const trimmed = text.trim();
 		if (!trimmed) return;
-		appState.chats[appState.currentlySelected].messages.push({
+		const userIndex = appState.currentlySelected;
+		appState.chats[userIndex].messages.push({
 			role: 'user',
 			text: md(trimmed),
 			time: new Date()
 		});
 		text = '';
-		// TODO: forward to Game State once that layer exists
+		gameState.receiveMessage({ userIndex, text: md(trimmed) });
 	}
 </script>
 
-<!-- Stub: sends user messages into the active chat. Game State forwarding deferred. -->
 <div class="input">
 	<input
 		bind:value={text}

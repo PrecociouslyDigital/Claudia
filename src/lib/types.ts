@@ -21,3 +21,5 @@ export type ChatAppState = {
 	player: ChatUser;
 	currentlySelected: number;
 };
+
+export type GamePhase = 'exploration' | 'cutscene' | 'postgame';

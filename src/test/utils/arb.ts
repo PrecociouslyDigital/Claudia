@@ -9,7 +9,19 @@
  * contain no HTML special characters, making page.getByText() queries reliable.
  */
 import * as fc from 'fast-check';
-import { md, type ChatComponentState, type ChatUser, type ChatAppState } from '$lib/types.js';
+import {
+	md,
+	type ChatComponentState,
+	type ChatUser,
+	type ChatAppState,
+	type GamePhase
+} from '$lib/types.js';
+import type { GameData } from '$lib/scenes/types.js';
+
+export const arbGamePhase = (): fc.Arbitrary<GamePhase> =>
+	fc.constantFrom('exploration', 'cutscene', 'postgame');
+
+export const arbGameData = (): fc.Arbitrary<GameData> => fc.record({ phase: arbGamePhase() });
 
 export const arbStatus = (): fc.Arbitrary<ChatUser['status']> =>
 	fc.constantFrom('active', 'away', 'busy', 'offline');
